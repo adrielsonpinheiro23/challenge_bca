@@ -43,9 +43,11 @@ export class PimPage {
 
   async addEmployee(firstName: string, lastName: string) {
     await this.addButton.click();
-    await expect(this.page.getByRole('heading', { name: 'Add Employee' })).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: /^Add Employee$/i })).toBeVisible({ timeout: 30_000 });
+    await expect(this.firstNameInput).toBeVisible({ timeout: 30_000 });
     await this.firstNameInput.fill(firstName);
     await this.lastNameInput.fill(lastName);
+    await expect(this.saveButton).toBeVisible({ timeout: 30_000 });
     await this.saveButton.click();
   }
 

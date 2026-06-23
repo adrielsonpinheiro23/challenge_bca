@@ -29,7 +29,8 @@ export class DashboardPage {
 
   async goToPim() {
     await this.pimMenu.click();
-    await expect(this.header).toHaveText('PIM');
+    await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/, { timeout: 30_000 });
+    await expect(this.page.getByRole('heading', { name: /^PIM$/i })).toBeVisible({ timeout: 30_000 });
   }
 
   async expectSidebarNavigation() {
