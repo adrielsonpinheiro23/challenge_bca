@@ -1,0 +1,30 @@
+{
+  "name": "bca-playwright-assessment",
+  "version": "1.0.0",
+  "description": "API and UI test automation suite for the BCA take-home challenge.",
+  "scripts": {
+    "test": "playwright test",
+    "test:api": "playwright test src/api/tests",
+    "test:ui": "playwright test src/ui/tests",
+    "test:headed": "playwright test src/ui/tests --headed",
+    "test:report": "playwright test --reporter=html,json",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "api-testing",
+    "ui-testing"
+  ],
+  "author": "Adrielson Pinheiro",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.3",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "dotenv": "^17.2.3",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,19 @@
+node_modules/
+dist/
+reports/
+test-results/
+playwright-report/
+.pw-google-profile/
+
+# Local environment files. Keep the template tracked.
+.env
+.env.*
+!.env.example
+
+# Local Codex/editor files that are not part of the challenge deliverable.
+.agents/
+.vscode/
+skills-lock.json
+
+# Challenge prompt source kept locally for reference, not needed in submission.
+Take-Home Code Challenge.pdf
