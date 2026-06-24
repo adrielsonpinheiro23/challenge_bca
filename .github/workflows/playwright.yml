@@ -25,6 +25,7 @@ permissions:
 
 jobs:
   test:
+    if: github.event_name != 'workflow_dispatch' || inputs.docker_test_suite == 'none'
     runs-on: ubuntu-latest
 
     steps:
@@ -61,7 +62,14 @@ jobs:
 
       - name: Generate Allure report
         if: always()
-        run: npm run report:allure:generate
+        run: |
+          if [ -d allure-results ]; then
+            mkdir -p reports
+            rm -rf reports/allure-report
+            npm run report:allure:generate
+          else
+            echo "No allure-results directory was created by the test run."
+          fi
 
       - name: Upload test reports
         if: always()
@@ -74,13 +82,13 @@ jobs:
           retention-days: 7
 
       - name: Upload report to GitHub Pages
-        if: github.event_name != 'pull_request'
+        if: always() && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: reports/playwright-html
 
   deploy-report:
-    if: github.event_name != 'pull_request'
+    if: always() && github.event_name != 'pull_request' && needs.test.result != 'skipped'
     needs: test
     runs-on: ubuntu-latest
     environment:
@@ -127,6 +135,12 @@ jobs:
             docker compose run --rm tests npm test
           fi
 
+      - name: Fix Docker report permissions
+        if: always()
+        run: |
+          sudo chown -R "$USER:$USER" reports allure-results test-results 2>/dev/null || true
+          chmod -R u+rwX reports allure-results test-results 2>/dev/null || true
+
       - name: Setup Node for Docker report
         if: always()
         uses: actions/setup-node@v4
@@ -149,6 +163,8 @@ jobs:
         if: always()
         run: |
           if [ -d allure-results ]; then
+            mkdir -p reports
+            rm -rf reports/allure-report
             npm run report:allure:generate
           else
             echo "No allure-results directory was created by the Docker test run."
