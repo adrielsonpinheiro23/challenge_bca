@@ -6,6 +6,7 @@ export default tseslint.config(
     ignores: [
       'node_modules/',
       'reports/',
+      'allure-results/',
       'test-results/',
       'playwright-report/',
       'dist/',

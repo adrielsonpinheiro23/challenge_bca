@@ -9,12 +9,15 @@ Automation test suite for the take-home challenge using Playwright Test and Type
 - Page Object Model for the UI layer.
 - Reusable API client for ReqRes.
 - Playwright HTML and JSON reports.
+- Allure report results and generated Allure HTML report.
+- Optional visual regression check for the OrangeHRM login page.
 - GitHub Actions workflow for CI.
 
 ## Prerequisites
 
 - Node.js 22 or newer
 - npm
+- Docker Desktop, only if running tests in a container
 
 ## Setup
 
@@ -41,6 +44,12 @@ npm run test:api
 # Run only UI tests in Chromium, Firefox, and WebKit
 npm run test:ui
 
+# Run the visual regression test
+npm run test:visual
+
+# Update the visual regression baseline intentionally
+npm run test:visual:update
+
 # Run UI tests with visible browser
 npm run test:headed
 
@@ -55,6 +64,12 @@ npm run format:check
 
 # Open latest HTML report
 npm run report
+
+# Generate Allure HTML report
+npm run report:allure:generate
+
+# Open generated Allure report
+npm run report:allure
 ```
 
 Reports are generated under `reports/`.
@@ -63,6 +78,18 @@ ReqRes currently requires an `x-api-key` header for every request. Without `REQR
 the API suite fails fast with a clear configuration error so required API coverage is not silently skipped.
 
 Latest local verification with `REQRES_API_KEY` configured: `npm run test:ui` passed 30 browser-project tests across Chromium, Firefox, and WebKit. The full suite now contains 43 tests: 13 API tests plus 30 UI browser-project tests.
+
+## Docker
+
+The project can also run inside the official Playwright Docker image.
+
+Create `.env` from `.env.example` first and set `REQRES_API_KEY`, then run:
+
+```bash
+docker compose run --rm tests
+```
+
+The compose file mounts `reports/` and `test-results/` back to the host so generated reports and failure artifacts remain available after the container exits.
 
 ## Project Structure
 
@@ -76,6 +103,7 @@ src/
     fixtures/      UI test data
     pages/         Page Object Model classes
     tests/         UI specs
+    visual/        Visual regression spec and snapshots
   utils/           Shared helpers
 ```
 
@@ -89,6 +117,8 @@ src/
 - Schema validation uses AJV for the user list endpoint.
 - Playwright captures screenshots and videos on failure through config.
 - ESLint and Prettier keep code style consistent and are also checked in CI.
+- Allure is configured as an additional reporter while Playwright HTML remains the primary published CI report.
+- Visual regression is kept in a separate command because public demo pages and screenshot baselines can be more sensitive to OS/browser rendering differences.
 
 ## Environment Variables
 
@@ -125,7 +155,9 @@ It can also be triggered manually:
 2. Go to the **Actions** tab.
 3. Select **Playwright Tests**.
 4. Click **Run workflow**.
-5. Keep the `main` branch selected and confirm the run.
+5. Keep the `main` branch selected.
+6. Optional: enable **Run Docker Compose tests** to validate the Docker setup in CI.
+7. Confirm the run.
 
 The CI pipeline runs:
 
@@ -135,12 +167,17 @@ The CI pipeline runs:
 4. `npm run lint`
 5. `npm run format:check`
 6. `npm test`
-7. Uploads `reports/` as a downloadable artifact
-8. Publishes the Playwright HTML report to GitHub Pages
+7. `npm run report:allure:generate`
+8. Uploads `reports/` as a downloadable artifact
+9. Publishes the Playwright HTML report to GitHub Pages
 
 Required CI secret:
 
 - `REQRES_API_KEY`: used by ReqRes API tests through the `x-api-key` header.
+
+The Docker validation job only runs when the workflow is started manually and the
+`run_docker_tests` option is enabled. This keeps normal pushes and pull requests faster while
+still allowing the containerized setup to be verified before submission.
 
 After a successful run, the Playwright report can be viewed in two ways:
 
@@ -148,3 +185,8 @@ After a successful run, the Playwright report can be viewed in two ways:
 - Download the `playwright-report` artifact from the workflow run.
 
 The GitHub Pages report is easier to inspect directly in the browser. The artifact is useful when the full generated report folder needs to be downloaded.
+
+The artifact also includes Allure files:
+
+- `allure-results`: raw Allure reporter output
+- `reports/allure-report`: generated Allure HTML report
