@@ -105,10 +105,37 @@ For GitHub Actions, add `REQRES_API_KEY` as a repository secret. The workflow pa
 
 ## CI
 
-GitHub Actions runs:
+The project includes a GitHub Actions workflow at `.github/workflows/playwright.yml`.
+
+The workflow runs automatically on:
+
+- pushes to `main`
+- pull requests targeting `main`
+
+It can also be triggered manually:
+
+1. Open the repository on GitHub.
+2. Go to the **Actions** tab.
+3. Select **Playwright Tests**.
+4. Click **Run workflow**.
+5. Keep the `main` branch selected and confirm the run.
+
+The CI pipeline runs:
 
 1. `npm ci`
 2. `npx playwright install --with-deps`
 3. `npm run typecheck`
 4. `npm test`
-5. Uploads `reports/` as an artifact
+5. Uploads `reports/` as a downloadable artifact
+6. Publishes the Playwright HTML report to GitHub Pages
+
+Required CI secret:
+
+- `REQRES_API_KEY`: used by ReqRes API tests through the `x-api-key` header.
+
+After a successful run, the Playwright report can be viewed in two ways:
+
+- Open the **Playwright HTML Report** link in the workflow summary or in the `deploy-report` job.
+- Download the `playwright-report` artifact from the workflow run.
+
+The GitHub Pages report is easier to inspect directly in the browser. The artifact is useful when the full generated report folder needs to be downloaded.
