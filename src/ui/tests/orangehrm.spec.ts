@@ -67,7 +67,7 @@ test.describe('OrangeHRM UI', () => {
     const pimPage = new PimPage(page);
 
     await dashboardPage.goToPim();
-    await pimPage.addEmployee(employee.firstName, employee.lastName);
+    await pimPage.addEmployee(employee.firstName, employee.lastName, employee.employeeId);
     await pimPage.expectPersonalDetails(employee.firstName, employee.lastName);
   });
 

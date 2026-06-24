@@ -53,7 +53,7 @@ export class PimPage {
     await expect(this.recordsText).toContainText(/Record|Records|No Records Found/);
   }
 
-  async addEmployee(firstName: string, lastName: string) {
+  async addEmployee(firstName: string, lastName: string, employeeId: string) {
     await expect(this.addButton).toBeVisible();
     await this.addButton.click();
     await expect(this.page.getByRole('heading', { name: /^Add Employee$/i })).toBeVisible({
@@ -62,6 +62,7 @@ export class PimPage {
     await expect(this.firstNameInput).toBeVisible({ timeout: 30_000 });
     await this.firstNameInput.fill(firstName);
     await this.lastNameInput.fill(lastName);
+    await this.employeeIdInput.fill(employeeId);
     await expect(this.saveButton).toBeVisible({ timeout: 30_000 });
     await Promise.all([
       this.page.waitForURL(/\/pim\/viewPersonalDetails\/empNumber\//, { timeout: 45_000 }),
