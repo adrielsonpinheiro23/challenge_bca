@@ -1,0 +1,9 @@
+node_modules/
+reports/
+test-results/
+playwright-report/
+dist/
+docs/
+package-lock.json
+.agents/
+.pw-google-profile/

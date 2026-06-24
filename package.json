@@ -9,7 +9,11 @@
     "test:headed": "playwright test src/ui/tests --headed",
     "test:report": "playwright test --reporter=html,json",
     "report": "playwright show-report",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "keywords": [
     "playwright",
@@ -20,11 +24,15 @@
   "author": "Adrielson Pinheiro",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.3",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "dotenv": "^17.2.3",
-    "typescript": "^6.0.3"
+    "eslint": "^10.5.0",
+    "prettier": "^3.8.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.0"
   }
 }
