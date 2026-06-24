@@ -79,6 +79,14 @@ the API suite fails fast with a clear configuration error so required API covera
 
 Latest local verification with `REQRES_API_KEY` configured: `npm run test:ui` passed 30 browser-project tests across Chromium, Firefox, and WebKit. The full suite now contains 43 tests: 13 API tests plus 30 UI browser-project tests.
 
+## Visual Regression
+
+Visual regression is intentionally separated from `npm test` to avoid adding screenshot-related
+flakiness to the main API/UI suite.
+
+- `npm run test:visual`: compares the current OrangeHRM login page screenshot with the saved baseline.
+- `npm run test:visual:update`: updates the saved baseline when a visual change is expected.
+
 ## Docker
 
 The project can also run inside the official Playwright Docker image.
@@ -87,6 +95,12 @@ Create `.env` from `.env.example` first and set `REQRES_API_KEY`, then run:
 
 ```bash
 docker compose run --rm tests
+```
+
+To validate only the UI suite in Docker, which avoids consuming ReqRes API quota:
+
+```bash
+docker compose run --rm tests npm run test:ui
 ```
 
 The compose file mounts `reports/` and `test-results/` back to the host so generated reports and failure artifacts remain available after the container exits.
@@ -176,8 +190,9 @@ Required CI secret:
 - `REQRES_API_KEY`: used by ReqRes API tests through the `x-api-key` header.
 
 The Docker validation job only runs when the workflow is started manually and the
-`run_docker_tests` option is enabled. This keeps normal pushes and pull requests faster while
-still allowing the containerized setup to be verified before submission.
+`run_docker_tests` option is enabled. It runs the UI suite in Docker to validate the containerized
+browser setup without consuming extra ReqRes API quota. This keeps normal pushes and pull requests
+faster while still allowing the containerized setup to be verified before submission.
 
 After a successful run, the Playwright report can be viewed in two ways:
 

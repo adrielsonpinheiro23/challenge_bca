@@ -112,5 +112,5 @@ jobs:
       - name: Build Docker test image
         run: docker compose build tests
 
-      - name: Run tests in Docker
-        run: docker compose run --rm tests
+      - name: Run UI tests in Docker
+        run: docker compose run --rm tests npm run test:ui
