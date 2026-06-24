@@ -119,6 +119,8 @@ src/
     tests/         UI specs
     visual/        Visual regression spec and snapshots
   utils/           Shared helpers
+scripts/
+  prepare-report-site.sh  Builds the GitHub Pages report index
 ```
 
 ## Design Decisions
@@ -131,7 +133,7 @@ src/
 - Schema validation uses AJV for the user list endpoint.
 - Playwright captures screenshots and videos on failure through config.
 - ESLint and Prettier keep code style consistent and are also checked in CI.
-- Allure is configured as an additional reporter while Playwright HTML remains the primary published CI report.
+- GitHub Pages publishes a small report index with links to both Playwright HTML and Allure reports.
 - Visual regression is kept in a separate command because public demo pages and screenshot baselines can be more sensitive to OS/browser rendering differences.
 
 ## Environment Variables
@@ -183,7 +185,7 @@ The CI pipeline runs:
 6. `npm test`
 7. `npm run report:allure:generate`
 8. Uploads `reports/` as a downloadable artifact
-9. Publishes the Playwright HTML report to GitHub Pages
+9. Publishes Playwright HTML and Allure reports to GitHub Pages
 
 Required CI secret:
 
@@ -197,14 +199,20 @@ while still allowing the containerized setup to be verified before submission.
 
 Docker test reports are uploaded as a separate artifact named `docker-test-report-<suite>`.
 
-After a successful run, the Playwright report can be viewed in two ways:
+After a run, reports can be viewed in two ways:
 
-- Open the **Playwright HTML Report** link in the workflow summary or in the `deploy-report` job.
+- Open the GitHub Pages link in the workflow summary, then choose **Playwright HTML Report** or **Allure Report**.
 - Download the `playwright-report` artifact from the workflow run.
 
-The GitHub Pages report is easier to inspect directly in the browser. The artifact is useful when the full generated report folder needs to be downloaded.
+The GitHub Pages report is easier to inspect directly in the browser. The artifact is useful when the full generated report folder, traces, screenshots, videos, or raw Allure results need to be downloaded.
 
-The artifact also includes Allure files:
+The published GitHub Pages site contains:
+
+- `/playwright`: Playwright HTML report
+- `/allure`: generated Allure HTML report
+
+The artifact also includes:
 
 - `allure-results`: raw Allure reporter output
 - `reports/allure-report`: generated Allure HTML report
+- `reports/playwright-html`: generated Playwright HTML report
