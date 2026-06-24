@@ -1,16 +1,15 @@
 import { expect, test } from '@playwright/test';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { ReqresClient, UserPayload } from '../clients/ReqresClient';
+import { ReqresClient } from '../clients/ReqresClient';
+import {
+  reqresUsers,
+  updatedUserPayload,
+  userPayloads,
+  validAuthPayload,
+} from '../fixtures/reqresData';
 import { userListSchema } from '../schemas/userList.schema';
 import { getRequiredEnv } from '../../utils/env';
-
-const VALID_USER_ID = 2;
-const MISSING_USER_ID = 23;
-const VALID_AUTH = {
-  email: 'eve.holt@reqres.in',
-  password: 'pistol',
-};
 
 test.describe('ReqRes API', () => {
   test.beforeAll(() => {
@@ -22,26 +21,26 @@ test.describe('ReqRes API', () => {
     const api = new ReqresClient(request);
     const response = await api.getUsers(2);
 
-    expect(response.status()).toBe(200);
+    expect(response.status(), 'user list request should succeed').toBe(200);
 
     const body = await response.json();
-    expect(body.page).toBe(2);
-    expect(body.per_page).toBeGreaterThan(0);
-    expect(body.total).toBeGreaterThan(0);
-    expect(body.total_pages).toBeGreaterThan(0);
-    expect(body.data).toBeInstanceOf(Array);
-    expect(body.data.length).toBeGreaterThan(0);
+    expect(body.page, 'response should return requested page').toBe(2);
+    expect(body.per_page, 'pagination should expose page size').toBeGreaterThan(0);
+    expect(body.total, 'pagination should expose total records').toBeGreaterThan(0);
+    expect(body.total_pages, 'pagination should expose total pages').toBeGreaterThan(0);
+    expect(body.data, 'user list should be an array').toBeInstanceOf(Array);
+    expect(body.data.length, 'page 2 should include users').toBeGreaterThan(0);
   });
 
   test('GET /api/users/{id} returns one user with expected fields', async ({ request }) => {
     const api = new ReqresClient(request);
-    const response = await api.getUser(VALID_USER_ID);
+    const response = await api.getUser(reqresUsers.existingUserId);
 
-    expect(response.status()).toBe(200);
+    expect(response.status(), 'single user request should succeed').toBe(200);
 
     const body = await response.json();
     expect(body.data).toMatchObject({
-      id: VALID_USER_ID,
+      id: reqresUsers.existingUserId,
       email: expect.stringContaining('@reqres.in'),
       first_name: expect.any(String),
       last_name: expect.any(String),
@@ -50,17 +49,12 @@ test.describe('ReqRes API', () => {
     expect(body.data.last_name.length).toBeGreaterThan(0);
   });
 
-  const userPayloads: UserPayload[] = [
-    { name: 'morpheus', job: 'leader' },
-    { name: 'trinity', job: 'zion resident' },
-  ];
-
   for (const payload of userPayloads) {
     test(`POST /api/users creates ${payload.name}`, async ({ request }) => {
       const api = new ReqresClient(request);
       const response = await api.createUser(payload);
 
-      expect(response.status()).toBe(201);
+      expect(response.status(), 'create user should return Created').toBe(201);
 
       const body = await response.json();
       expect(body).toMatchObject(payload);
@@ -71,29 +65,28 @@ test.describe('ReqRes API', () => {
 
   test('PUT /api/users/{id} updates user data', async ({ request }) => {
     const api = new ReqresClient(request);
-    const payload = { name: 'morpheus', job: 'zion manager' };
-    const response = await api.updateUser(VALID_USER_ID, payload);
+    const response = await api.updateUser(reqresUsers.existingUserId, updatedUserPayload);
 
-    expect(response.status()).toBe(200);
+    expect(response.status(), 'update user should succeed').toBe(200);
 
     const body = await response.json();
-    expect(body).toMatchObject(payload);
+    expect(body).toMatchObject(updatedUserPayload);
     expect(body.updatedAt).toEqual(expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/));
   });
 
   test('DELETE /api/users/{id} returns 204', async ({ request }) => {
     const api = new ReqresClient(request);
-    const response = await api.deleteUser(VALID_USER_ID);
+    const response = await api.deleteUser(reqresUsers.existingUserId);
 
-    expect(response.status()).toBe(204);
-    expect(await response.text()).toBe('');
+    expect(response.status(), 'delete user should return No Content').toBe(204);
+    expect(await response.text(), 'delete response body should be empty').toBe('');
   });
 
   test('POST /api/register returns token for valid payload', async ({ request }) => {
     const api = new ReqresClient(request);
-    const response = await api.register(VALID_AUTH);
+    const response = await api.register(validAuthPayload);
 
-    expect(response.status()).toBe(200);
+    expect(response.status(), 'valid register payload should succeed').toBe(200);
 
     const body = await response.json();
     expect(body.id).toEqual(expect.any(Number));
@@ -103,9 +96,9 @@ test.describe('ReqRes API', () => {
 
   test('POST /api/register returns error when password is missing', async ({ request }) => {
     const api = new ReqresClient(request);
-    const response = await api.register({ email: VALID_AUTH.email });
+    const response = await api.register({ email: validAuthPayload.email });
 
-    expect(response.status()).toBe(400);
+    expect(response.status(), 'missing password should be rejected').toBe(400);
 
     const body = await response.json();
     expect(body.error).toBe('Missing password');
@@ -113,9 +106,9 @@ test.describe('ReqRes API', () => {
 
   test('POST /api/login returns token for valid credentials', async ({ request }) => {
     const api = new ReqresClient(request);
-    const response = await api.login(VALID_AUTH);
+    const response = await api.login(validAuthPayload);
 
-    expect(response.status()).toBe(200);
+    expect(response.status(), 'valid login payload should succeed').toBe(200);
 
     const body = await response.json();
     expect(body.token).toEqual(expect.any(String));
@@ -126,7 +119,7 @@ test.describe('ReqRes API', () => {
     const api = new ReqresClient(request);
     const response = await api.login({});
 
-    expect(response.status()).toBe(400);
+    expect(response.status(), 'missing login credentials should be rejected').toBe(400);
 
     const body = await response.json();
     expect(body.error).toEqual(expect.any(String));
@@ -135,10 +128,10 @@ test.describe('ReqRes API', () => {
 
   test('GET /api/users/{id} returns 404 for missing user', async ({ request }) => {
     const api = new ReqresClient(request);
-    const response = await api.getUser(MISSING_USER_ID);
+    const response = await api.getUser(reqresUsers.missingUserId);
 
-    expect(response.status()).toBe(404);
-    expect(await response.json()).toEqual({});
+    expect(response.status(), 'unknown user should not exist').toBe(404);
+    expect(await response.json(), 'missing user response should be empty JSON').toEqual({});
   });
 
   test('GET /api/users?delay=3 returns valid data within timeout', async ({ request }) => {
@@ -148,8 +141,10 @@ test.describe('ReqRes API', () => {
     const response = await api.getDelayedUsers(3);
     const durationMs = Date.now() - startedAt;
 
-    expect(response.status()).toBe(200);
-    expect(durationMs).toBeLessThan(10_000);
+    expect(response.status(), 'delayed users request should succeed').toBe(200);
+    expect(durationMs, 'delayed response should stay inside client timeout budget').toBeLessThan(
+      10_000,
+    );
 
     const body = await response.json();
     expect(body.data).toBeInstanceOf(Array);
@@ -166,7 +161,7 @@ test.describe('ReqRes API', () => {
     addFormats(ajv);
     const validate = ajv.compile(userListSchema);
 
-    expect(response.status()).toBe(200);
+    expect(response.status(), 'schema validation target request should succeed').toBe(200);
     expect(validate(body), JSON.stringify(validate.errors, null, 2)).toBe(true);
   });
 });

@@ -24,13 +24,17 @@ export class DashboardPage {
 
   async logout() {
     await this.userMenu.click();
+    await expect(this.logoutLink).toBeVisible();
     await this.logoutLink.click();
   }
 
   async goToPim() {
+    await expect(this.pimMenu).toBeVisible();
     await this.pimMenu.click();
     await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/, { timeout: 30_000 });
-    await expect(this.page.getByRole('heading', { name: /^PIM$/i })).toBeVisible({ timeout: 30_000 });
+    await expect(this.page.getByRole('heading', { name: /^PIM$/i })).toBeVisible({
+      timeout: 30_000,
+    });
   }
 
   async expectSidebarNavigation() {

@@ -1,25 +1,8 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { loginAsAdmin, orangeHrmCredentials } from '../fixtures/auth';
 import { createEmployeeData } from '../fixtures/employees';
-import { DashboardPage } from '../pages/DashboardPage';
 import { LoginPage } from '../pages/LoginPage';
 import { PimPage } from '../pages/PimPage';
-import { getRequiredEnv } from '../../utils/env';
-import { uniqueName } from '../../utils/testData';
-
-const password = getRequiredEnv('ORANGE_HRM_PASSWORD');
-const username = getRequiredEnv('ORANGE_HRM_USERNAME');
-
-async function loginAsAdmin(page: Page) {
-  // Reusable login helper for flows that need an authenticated OrangeHRM session.
-  const loginPage = new LoginPage(page);
-  const dashboardPage = new DashboardPage(page);
-
-  await loginPage.goto();
-  await loginPage.login(username, password);
-  await dashboardPage.expectLoaded();
-
-  return { loginPage, dashboardPage };
-}
 
 test.describe('OrangeHRM UI', () => {
   test('successful login opens the dashboard', async ({ page }) => {
@@ -31,7 +14,7 @@ test.describe('OrangeHRM UI', () => {
     const loginPage = new LoginPage(page);
 
     await loginPage.goto();
-    await loginPage.login(username, 'wrong-password');
+    await loginPage.login(orangeHrmCredentials.adminUsername, 'wrong-password');
     await loginPage.expectInvalidCredentialsMessage();
   });
 
@@ -69,12 +52,11 @@ test.describe('OrangeHRM UI', () => {
   });
 
   test('employee search shows no records for an unknown employee', async ({ page }) => {
-    const unknownEmployeeName = uniqueName('UnknownEmployee');
     const { dashboardPage } = await loginAsAdmin(page);
     const pimPage = new PimPage(page);
 
     await dashboardPage.goToPim();
-    await pimPage.searchEmployee(unknownEmployeeName);
+    await pimPage.searchEmployeeById('999999999');
     await pimPage.expectNoRecordsFound();
   });
 

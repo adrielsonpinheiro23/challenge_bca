@@ -2,6 +2,7 @@ import { expect, Locator, Page } from '@playwright/test';
 
 export class PimPage {
   private readonly addButton: Locator;
+  private readonly employeeIdInput: Locator;
   private readonly employeeNameInput: Locator;
   private readonly employeeTable: Locator;
   private readonly firstNameInput: Locator;
@@ -12,6 +13,9 @@ export class PimPage {
 
   constructor(private readonly page: Page) {
     this.addButton = page.locator('button[type="button"]:has-text("Add")');
+    this.employeeIdInput = page.locator(
+      'xpath=//label[normalize-space()="Employee Id"]/ancestor::div[contains(@class,"oxd-input-group")]//input',
+    );
     this.employeeNameInput = page.getByPlaceholder('Type for hints...').first();
     this.employeeTable = page.locator('div[role="table"].orangehrm-employee-list');
     this.firstNameInput = page.locator('input[name="firstName"]');
@@ -33,6 +37,14 @@ export class PimPage {
 
   async searchEmployee(name: string) {
     await this.employeeNameInput.fill(name);
+    await expect(this.searchButton).toBeEnabled();
+    await this.searchButton.click();
+    await expect(this.recordsText).toBeVisible();
+  }
+
+  async searchEmployeeById(employeeId: string) {
+    await this.employeeIdInput.fill(employeeId);
+    await expect(this.searchButton).toBeEnabled();
     await this.searchButton.click();
     await expect(this.recordsText).toBeVisible();
   }
@@ -42,17 +54,25 @@ export class PimPage {
   }
 
   async addEmployee(firstName: string, lastName: string) {
+    await expect(this.addButton).toBeVisible();
     await this.addButton.click();
-    await expect(this.page.getByRole('heading', { name: /^Add Employee$/i })).toBeVisible({ timeout: 30_000 });
+    await expect(this.page.getByRole('heading', { name: /^Add Employee$/i })).toBeVisible({
+      timeout: 30_000,
+    });
     await expect(this.firstNameInput).toBeVisible({ timeout: 30_000 });
     await this.firstNameInput.fill(firstName);
     await this.lastNameInput.fill(lastName);
     await expect(this.saveButton).toBeVisible({ timeout: 30_000 });
-    await this.saveButton.click();
+    await Promise.all([
+      this.page.waitForURL(/\/pim\/viewPersonalDetails\/empNumber\//, { timeout: 45_000 }),
+      this.saveButton.click(),
+    ]);
   }
 
   async expectPersonalDetails(firstName: string, lastName: string) {
-    await expect(this.page.getByRole('heading', { name: 'Personal Details' })).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: 'Personal Details' })).toBeVisible({
+      timeout: 30_000,
+    });
     await expect(this.firstNameInput).toHaveValue(firstName);
     await expect(this.lastNameInput).toHaveValue(lastName);
   }

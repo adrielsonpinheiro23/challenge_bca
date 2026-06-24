@@ -18,9 +18,21 @@ export class LoginPage {
   }
 
   async goto() {
-    // The public demo can keep background requests open, especially outside Chromium.
-    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(this.loginTitle).toBeVisible();
+    // The public demo sometimes returns a blank shell on the first navigation.
+    // A bounded retry keeps the test independent without adding hardcoded sleeps.
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      await this.page.goto('/web/index.php/auth/login', { waitUntil: 'domcontentloaded' });
+
+      try {
+        await expect(this.usernameInput).toBeVisible({ timeout: 15_000 });
+        await expect(this.loginTitle).toBeVisible();
+        return;
+      } catch (error) {
+        if (attempt === 2) {
+          throw error;
+        }
+      }
+    }
   }
 
   async login(username: string, password: string) {
@@ -29,7 +41,9 @@ export class LoginPage {
     await this.loginButton.scrollIntoViewIfNeeded();
     await expect(this.loginButton).toBeEnabled();
     await this.loginButton.click();
-    await this.page.waitForLoadState('domcontentloaded', { timeout: 20_000 }).catch(() => undefined);
+    await this.page
+      .waitForLoadState('domcontentloaded', { timeout: 20_000 })
+      .catch(() => undefined);
   }
 
   async submitEmptyForm() {
@@ -49,5 +63,6 @@ export class LoginPage {
 
   async expectRequiredMessages(count = 2) {
     await expect(this.requiredMessages).toHaveCount(count);
+    await expect(this.requiredMessages).toHaveText(Array(count).fill('Required'));
   }
 }
