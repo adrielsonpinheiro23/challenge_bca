@@ -9,7 +9,7 @@ export class DashboardPage {
 
   constructor(private readonly page: Page) {
     this.adminMenu = page.locator('a[href="/web/index.php/admin/viewAdminModule"]');
-    this.header = page.getByRole('heading', { name: /Dashboard|PIM/ });
+    this.header = page.locator('.oxd-topbar-header-breadcrumb h6');
     this.logoutLink = page.locator('a[href*="/auth/logout"]');
     this.pimMenu = page.locator('a[href="/web/index.php/pim/viewPimModule"]');
     this.userMenu = page.locator('.oxd-userdropdown-tab');
@@ -20,7 +20,7 @@ export class DashboardPage {
       timeout: 45_000,
       waitUntil: 'domcontentloaded',
     });
-    await expect(this.header).toContainText('Dashboard');
+    await expect(this.header).toHaveText('Dashboard', { timeout: 30_000 });
     await expect(this.page.getByText('Time at Work')).toBeVisible();
     await expect(this.page.getByText('My Actions')).toBeVisible();
     await expect(this.page.getByText('Quick Launch')).toBeVisible();
