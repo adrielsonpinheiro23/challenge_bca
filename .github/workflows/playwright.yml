@@ -180,3 +180,48 @@ jobs:
             allure-results/
             test-results/
           retention-days: 7
+
+      - name: Prepare Docker report for GitHub Pages
+        if: always()
+        run: |
+          mkdir -p reports/playwright-html
+          if [ ! -f reports/playwright-html/index.html ]; then
+            cat > reports/playwright-html/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Playwright Docker Report</title>
+            </head>
+            <body>
+              <h1>Playwright Docker report was not generated</h1>
+              <p>Download the workflow artifact to inspect logs, traces, screenshots, and videos.</p>
+            </body>
+          </html>
+          HTML
+          fi
+
+      - name: Upload Docker report to GitHub Pages
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/playwright-html
+
+  deploy-docker-report:
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.docker_test_suite != 'none'
+    needs: docker-test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy Docker Playwright report to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add Docker report link to workflow summary
+        run: |
+          echo "### Docker Playwright HTML Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Open report](${{ steps.deployment.outputs.page_url }})" >> "$GITHUB_STEP_SUMMARY"
