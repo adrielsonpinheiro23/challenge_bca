@@ -47,6 +47,12 @@ npm run test:headed
 # TypeScript validation
 npm run typecheck
 
+# ESLint validation
+npm run lint
+
+# Prettier validation
+npm run format:check
+
 # Open latest HTML report
 npm run report
 ```
@@ -82,6 +88,7 @@ src/
 - API tests use a small `ReqresClient` so endpoints are not duplicated across tests.
 - Schema validation uses AJV for the user list endpoint.
 - Playwright captures screenshots and videos on failure through config.
+- ESLint and Prettier keep code style consistent and are also checked in CI.
 
 ## Environment Variables
 
@@ -125,9 +132,11 @@ The CI pipeline runs:
 1. `npm ci`
 2. `npx playwright install --with-deps`
 3. `npm run typecheck`
-4. `npm test`
-5. Uploads `reports/` as a downloadable artifact
-6. Publishes the Playwright HTML report to GitHub Pages
+4. `npm run lint`
+5. `npm run format:check`
+6. `npm test`
+7. Uploads `reports/` as a downloadable artifact
+8. Publishes the Playwright HTML report to GitHub Pages
 
 Required CI secret:
 
