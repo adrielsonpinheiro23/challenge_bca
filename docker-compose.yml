@@ -5,5 +5,6 @@ services:
       - .env
     volumes:
       - ./reports:/app/reports
+      - ./allure-results:/app/allure-results
       - ./test-results:/app/test-results
     command: npm test

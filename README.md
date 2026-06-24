@@ -170,7 +170,7 @@ It can also be triggered manually:
 3. Select **Playwright Tests**.
 4. Click **Run workflow**.
 5. Keep the `main` branch selected.
-6. Optional: enable **Run Docker Compose tests** to validate the Docker setup in CI.
+6. Optional: choose a **Docker Compose test suite** (`ui`, `api`, or `all`) to validate Docker in CI.
 7. Confirm the run.
 
 The CI pipeline runs:
@@ -190,9 +190,10 @@ Required CI secret:
 - `REQRES_API_KEY`: used by ReqRes API tests through the `x-api-key` header.
 
 The Docker validation job only runs when the workflow is started manually and the
-`run_docker_tests` option is enabled. It runs the UI suite in Docker to validate the containerized
-browser setup without consuming extra ReqRes API quota. This keeps normal pushes and pull requests
-faster while still allowing the containerized setup to be verified before submission.
+`docker_test_suite` option is set to `ui`, `api`, or `all`. Use `ui` when the goal is to validate
+the containerized browser setup without consuming extra ReqRes API quota. Use `all` only when the
+ReqRes daily limit still has enough headroom. This keeps normal pushes and pull requests faster
+while still allowing the containerized setup to be verified before submission.
 
 After a successful run, the Playwright report can be viewed in two ways:
 

@@ -3,11 +3,16 @@ name: Playwright Tests
 on:
   workflow_dispatch:
     inputs:
-      run_docker_tests:
-        description: Run Docker Compose tests
+      docker_test_suite:
+        description: Docker Compose test suite
         required: false
-        default: false
-        type: boolean
+        default: none
+        type: choice
+        options:
+          - none
+          - ui
+          - api
+          - all
   push:
     branches: [main]
   pull_request:
@@ -94,7 +99,7 @@ jobs:
           echo "[Open report](${{ steps.deployment.outputs.page_url }})" >> "$GITHUB_STEP_SUMMARY"
 
   docker-test:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_docker_tests
+    if: github.event_name == 'workflow_dispatch' && inputs.docker_test_suite != 'none'
     runs-on: ubuntu-latest
 
     steps:
@@ -112,5 +117,27 @@ jobs:
       - name: Build Docker test image
         run: docker compose build tests
 
-      - name: Run UI tests in Docker
-        run: docker compose run --rm tests npm run test:ui
+      - name: Run selected tests in Docker
+        run: |
+          if [ "${{ inputs.docker_test_suite }}" = "ui" ]; then
+            docker compose run --rm tests npm run test:ui
+          elif [ "${{ inputs.docker_test_suite }}" = "api" ]; then
+            docker compose run --rm tests npm run test:api
+          else
+            docker compose run --rm tests npm test
+          fi
+
+      - name: Generate Docker Allure report
+        if: always()
+        run: docker compose run --rm tests npm run report:allure:generate
+
+      - name: Upload Docker test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-test-report-${{ inputs.docker_test_suite }}
+          path: |
+            reports/
+            allure-results/
+            test-results/
+          retention-days: 7

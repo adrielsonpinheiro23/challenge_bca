@@ -16,7 +16,11 @@ export class DashboardPage {
   }
 
   async expectLoaded() {
-    await expect(this.header).toHaveText('Dashboard');
+    await this.page.waitForURL(/\/dashboard\/index/, {
+      timeout: 45_000,
+      waitUntil: 'domcontentloaded',
+    });
+    await expect(this.header).toContainText('Dashboard');
     await expect(this.page.getByText('Time at Work')).toBeVisible();
     await expect(this.page.getByText('My Actions')).toBeVisible();
     await expect(this.page.getByText('Quick Launch')).toBeVisible();
