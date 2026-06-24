@@ -173,7 +173,8 @@ It can also be triggered manually:
 4. Click **Run workflow**.
 5. Keep the `main` branch selected.
 6. Optional: choose a **Docker Compose test suite** (`ui`, `api`, or `all`) to validate Docker in CI.
-7. Confirm the run.
+7. Optional: enable **Publish Docker report to GitHub Pages** only when you want the Docker report to replace the currently published Pages report.
+8. Confirm the run.
 
 The CI pipeline runs:
 
@@ -198,6 +199,9 @@ ReqRes daily limit still has enough headroom. This keeps normal pushes and pull 
 while still allowing the containerized setup to be verified before submission.
 
 Docker test reports are uploaded as a separate artifact named `docker-test-report-<suite>`.
+Manual Docker runs do not publish to GitHub Pages by default, so they do not overwrite the latest
+full pipeline report. Enable `publish_docker_report` manually when the Docker report should be
+published in the browser.
 
 After a run, reports can be viewed in two ways:
 
