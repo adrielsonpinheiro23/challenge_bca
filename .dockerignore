@@ -1,0 +1,15 @@
+node_modules/
+reports/
+allure-results/
+test-results/
+playwright-report/
+dist/
+docs/
+.agents/
+.git/
+.github/
+.pw-google-profile/
+.vscode/
+.env
+.env.*
+!.env.example
