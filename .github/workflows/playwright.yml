@@ -127,9 +127,32 @@ jobs:
             docker compose run --rm tests npm test
           fi
 
+      - name: Setup Node for Docker report
+        if: always()
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java for Allure
+        if: always()
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install report dependencies
+        if: always()
+        run: npm ci
+
       - name: Generate Docker Allure report
         if: always()
-        run: docker compose run --rm tests npm run report:allure:generate
+        run: |
+          if [ -d allure-results ]; then
+            npm run report:allure:generate
+          else
+            echo "No allure-results directory was created by the Docker test run."
+          fi
 
       - name: Upload Docker test reports
         if: always()

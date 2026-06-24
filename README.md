@@ -195,6 +195,8 @@ the containerized browser setup without consuming extra ReqRes API quota. Use `a
 ReqRes daily limit still has enough headroom. This keeps normal pushes and pull requests faster
 while still allowing the containerized setup to be verified before submission.
 
+Docker test reports are uploaded as a separate artifact named `docker-test-report-<suite>`.
+
 After a successful run, the Playwright report can be viewed in two ways:
 
 - Open the **Playwright HTML Report** link in the workflow summary or in the `deploy-report` job.
