@@ -15,5 +15,8 @@ playwright-report/
 .vscode/
 skills-lock.json
 
+# Local planning/learning notes.
+docs/
+
 # Challenge prompt source kept locally for reference, not needed in submission.
 Take-Home Code Challenge.pdf
